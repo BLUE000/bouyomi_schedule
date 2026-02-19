@@ -1,0 +1,52 @@
+{
+  "tag": "sample_timer",
+  "window": {
+    "title": "Bouyomi-chan時報読み上げ",
+    "width": 500,
+    "height": 400,
+    "background_color": "#000000"
+  },
+  "display": {
+    "font_family": "メイリオ",
+    "current_time": {
+      "format": "%H:%M:%S",
+      "font_size": 28,
+      "color": "#FFFFFF",
+      "label": "現在時刻"
+    },
+    "remaining_time": {
+      "format": "{hours:02d}:{minutes:02d}:{seconds:02d}",
+      "font_size": 36,
+      "color": "#00FF00",
+      "label": "残り時間"
+    }
+  },
+  "bouyomi": {
+    "host": "localhost",
+    "port": 50080,
+    "repeat_count": 1,
+    "repeat_interval_sec": 2
+  },
+  "timer_presets": [
+    {
+      "name": "1時間ごと",
+      "interval_minutes": 60,
+      "message": "1時間経過しました"
+    },
+    {
+      "name": "30分ごと",
+      "interval_minutes": 30,
+      "message": "30分経過しました"
+    },
+    {
+      "name": "15分ごと",
+      "interval_minutes": 15,
+      "message": "15分経過しました"
+    },
+    {
+      "name": "カスタム",
+      "interval_minutes": null,
+      "message": "時間です"
+    }
+  ]
+}
