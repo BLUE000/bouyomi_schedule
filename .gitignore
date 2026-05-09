@@ -5,3 +5,4 @@ bin/
 .qt/
 live_test_log.txt
 test_results.txt
+WIP_STATE.md
