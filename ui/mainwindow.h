@@ -10,6 +10,7 @@
 #include <QLineEdit>
 #include "core/timer_manager.h"
 #include "api/bouyomi_client.h"
+#include "timer_row_widget.h"
 
 class MainWindow : public QMainWindow
 {
@@ -34,6 +35,8 @@ private:
     QLabel* m_remainingTimeLabel;
     QListWidget* m_timerListWidget;
     QComboBox* m_presetCombo;
+    QComboBox* m_voiceCombo;
+    QSpinBox* m_valueSpin;
     QSpinBox* m_hourSpin;
     QSpinBox* m_minSpin;
     QLineEdit* m_messageEdit;

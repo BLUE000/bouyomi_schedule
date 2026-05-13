@@ -10,6 +10,8 @@
 struct ScheduledTimer {
     QDateTime targetTime;
     QString message;
+    QString voiceTag;  // "y)", "速度(値)" etc.
+    int voiceValue;    // Numerical value if applicable
 };
 
 class TimerManager : public QObject
@@ -19,7 +21,8 @@ public:
     explicit TimerManager(QObject *parent = nullptr);
 
     bool loadConfig(const QString& path);
-    void addTimer(const QDateTime& time, const QString& message);
+    void addTimer(const QDateTime& time, const QString& message, 
+                  const QString& voiceTag = "", int voiceValue = 0);
     void removeTimer(int index);
     void clearTimers();
 

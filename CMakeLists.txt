@@ -83,6 +83,12 @@ target_include_directories(BouyomiSchedule PRIVATE
     ${CMAKE_SOURCE_DIR}/ui
 )
 
+if(MSVC)
+    target_compile_options(BouyomiSchedule PRIVATE /Zc:__cplusplus)
+    target_compile_options(TestBouyomiSchedule PRIVATE /Zc:__cplusplus)
+    target_compile_options(LiveTest PRIVATE /Zc:__cplusplus)
+endif()
+
 # Windows固有の設定 (GUIアプリとしてビルド)
 if(WIN32)
     set_target_properties(BouyomiSchedule PROPERTIES WIN32_EXECUTABLE TRUE)

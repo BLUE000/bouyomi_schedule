@@ -61,6 +61,16 @@ void MainWindow::setupUI()
     
     m_hourSpin = new QSpinBox(this); m_hourSpin->setRange(0, 23);
     m_minSpin = new QSpinBox(this); m_minSpin->setRange(0, 59);
+    
+    m_voiceCombo = new QComboBox(this);
+    m_voiceCombo->addItems({"y)", "b)", "h)", "d)", "a)", "r)", "t)", "g)", "やまびこ)", "エコー)", "速度(値)", "音程(値)"});
+    m_voiceCombo->setSizeAdjustPolicy(QComboBox::AdjustToContents);
+    
+    m_valueSpin = new QSpinBox(this);
+    m_valueSpin->setRange(0, 9999);
+    m_valueSpin->setFixedWidth(60);
+    m_valueSpin->setEnabled(false);
+
     m_messageEdit = new QLineEdit(this);
     m_messageEdit->setPlaceholderText("Message to speak...");
 
@@ -71,7 +81,17 @@ void MainWindow::setupUI()
     inputLayout->addWidget(new QLabel(":"));
     inputLayout->addWidget(m_minSpin);
     setupLayout->addLayout(inputLayout);
-    setupLayout->addWidget(m_messageEdit);
+
+    QHBoxLayout* voiceLayout = new QHBoxLayout();
+    voiceLayout->addWidget(new QLabel("Voice:"));
+    voiceLayout->addWidget(m_voiceCombo);
+    voiceLayout->addWidget(m_valueSpin);
+    voiceLayout->addWidget(m_messageEdit);
+    setupLayout->addLayout(voiceLayout);
+
+    connect(m_voiceCombo, &QComboBox::currentTextChanged, [this](const QString& text) {
+        m_valueSpin->setEnabled(text == "速度(値)" || text == "音程(値)");
+    });
 
     QPushButton* addBtn = new QPushButton("Add Timer", this);
     connect(addBtn, &QPushButton::clicked, this, &MainWindow::addCustomTimer);
@@ -121,8 +141,24 @@ void MainWindow::updateUI()
 
     // リストの更新
     m_timerListWidget->clear();
+    int index = 0;
     for (const auto& t : timers) {
-        m_timerListWidget->addItem(QString("[%1] %2").arg(t.targetTime.toString("HH:mm")).arg(t.message));
+        QListWidgetItem* item = new QListWidgetItem(m_timerListWidget);
+        TimerRowWidget* row = new TimerRowWidget(
+            index, 
+            t.targetTime.toString("HH:mm"), 
+            t.voiceTag, 
+            t.voiceValue, 
+            t.message, 
+            this
+        );
+        
+        item->setSizeHint(row->sizeHint());
+        m_timerListWidget->addItem(item);
+        m_timerListWidget->setItemWidget(item, row);
+        
+        connect(row, &TimerRowWidget::deleteRequested, m_timerManager, &TimerManager::removeTimer);
+        index++;
     }
 }
 
@@ -134,7 +170,7 @@ void MainWindow::addCustomTimer()
     
     if (target <= now) target = target.addDays(1);
     
-    m_timerManager->addTimer(target, m_messageEdit->text());
+    m_timerManager->addTimer(target, m_messageEdit->text(), m_voiceCombo->currentText(), m_valueSpin->value());
 }
 
 void MainWindow::onPresetChanged(int index)

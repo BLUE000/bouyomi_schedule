@@ -23,9 +23,10 @@ bool TimerManager::loadConfig(const QString& path)
     return true;
 }
 
-void TimerManager::addTimer(const QDateTime& time, const QString& message)
+void TimerManager::addTimer(const QDateTime& time, const QString& message, 
+                           const QString& voiceTag, int voiceValue)
 {
-    m_timers.append({time, message});
+    m_timers.append({time, message, voiceTag, voiceValue});
     
     // 時間順にソート
     std::sort(m_timers.begin(), m_timers.end(), [](const ScheduledTimer& a, const ScheduledTimer& b) {
@@ -63,9 +64,22 @@ void TimerManager::checkTimers()
     // 逆順に削除（インデックスがずれないように）
     for (int i = triggeredIndices.size() - 1; i >= 0; --i) {
         int idx = triggeredIndices[i];
-        QString msg = m_timers[idx].message;
+        const auto& t = m_timers[idx];
+        
+        QString finalMessage = t.message;
+        if (!t.voiceTag.isEmpty()) {
+            if (t.voiceTag == "速度(値)") {
+                finalMessage = QString("(s%1) %2").arg(t.voiceValue).arg(t.message);
+            } else if (t.voiceTag == "音程(値)") {
+                finalMessage = QString("(p%1) %2").arg(t.voiceValue).arg(t.message);
+            } else {
+                // y), やまびこ) 等はそのまま付加
+                finalMessage = QString("(%1 %2").arg(t.voiceTag).arg(t.message);
+            }
+        }
+        
         m_timers.removeAt(idx);
-        emit timerTriggered(msg);
+        emit timerTriggered(finalMessage);
     }
 
     if (!triggeredIndices.isEmpty()) {
