@@ -58,7 +58,6 @@ pipeline {
                 script {
                     def webhook = (params.BUILD_TYPE == 'periodic') ? env.WEBHOOK_PERIODIC : env.WEBHOOK_INDIVIDUAL
                     
-                    // PowerShell で UTF-8 対応の通知を送信
                     powershell """
                         \$webhook = '${webhook}'
                         \$body = @{
@@ -82,7 +81,6 @@ pipeline {
             script {
                 def webhook = (params.BUILD_TYPE == 'periodic') ? env.WEBHOOK_PERIODIC : env.WEBHOOK_INDIVIDUAL
                 
-                // PowerShell で UTF-8 対応の通知を送信
                 powershell """
                     \$webhook = '${webhook}'
                     \$body = @{
