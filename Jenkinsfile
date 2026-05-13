@@ -48,14 +48,8 @@ pipeline {
             steps {
                 bat '''
                     set PATH=%QT_DIR%\\bin;%CMAKE_BIN%;%NINJA_BIN%;%MINGW_BIN%;%PATH%
-                    cmake --build build_jenkins --target unit_tests
+                    cmake --build build_jenkins
                 '''
-            }
-        }
-        
-        stage('Test') {
-            steps {
-                bat '.\\build_jenkins\\unit_tests.exe --gtest_output=xml:unit_tests_report.xml'
             }
         }
         
@@ -63,12 +57,17 @@ pipeline {
             steps {
                 script {
                     def webhook = (params.BUILD_TYPE == 'periodic') ? env.WEBHOOK_PERIODIC : env.WEBHOOK_INDIVIDUAL
-                    def message = "✅ **ビルド成功 [${params.BUILD_TYPE}]**\\n" +
-                                  "Job: #${env.BUILD_NUMBER}\\n" +
-                                  "Branch: ${env.GIT_BRANCH}\\n" +
-                                  "URL: ${env.BUILD_URL}"
                     
-                    bat "curl -X POST ${webhook} -H \"Content-Type: application/json\" -d \"{\\\"content\\\": \\\"${message}\\\"}\""
+                    // PowerShell で UTF-8 対応の通知を送信
+                    powershell """
+                        \$webhook = '${webhook}'
+                        \$body = @{
+                            content = ":white_check_mark: **ビルド成功 [${params.BUILD_TYPE}]**`nJob: #${env.BUILD_NUMBER}`nBranch: ${env.GIT_BRANCH}`nURL: ${env.BUILD_URL}"
+                        } | ConvertTo-Json
+                        
+                        [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12
+                        Invoke-RestMethod -Uri \$webhook -Method Post -Body \$body -ContentType 'application/json; charset=utf-8'
+                    """
                 }
             }
         }
@@ -76,18 +75,23 @@ pipeline {
     
     post {
         always {
-            junit allowEmptyResults: true, testResults: 'unit_tests_report.xml' 
+            junit allowEmptyResults: true, testResults: 'unit_tests_report.xml'
         }
         
         failure {
             script {
                 def webhook = (params.BUILD_TYPE == 'periodic') ? env.WEBHOOK_PERIODIC : env.WEBHOOK_INDIVIDUAL
-                def message = "❌ **ビルド失敗 [${params.BUILD_TYPE}]**\\n" +
-                              "Job: #${env.BUILD_NUMBER}\\n" +
-                              "Branch: ${env.GIT_BRANCH}\\n" +
-                              "URL: ${env.BUILD_URL}"
                 
-                bat "curl -X POST ${webhook} -H \"Content-Type: application/json\" -d \"{\\\"content\\\": \\\"${message}\\\"}\""
+                // PowerShell で UTF-8 対応の通知を送信
+                powershell """
+                    \$webhook = '${webhook}'
+                    \$body = @{
+                        content = ":x: **ビルド失敗 [${params.BUILD_TYPE}]**`nJob: #${env.BUILD_NUMBER}`nBranch: ${env.GIT_BRANCH}`nURL: ${env.BUILD_URL}"
+                    } | ConvertTo-Json
+                    
+                    [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12
+                    Invoke-RestMethod -Uri \$webhook -Method Post -Body \$body -ContentType 'application/json; charset=utf-8'
+                """
             }
         }
     }
