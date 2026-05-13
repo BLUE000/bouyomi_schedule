@@ -6,3 +6,6 @@ bin/
 live_test_log.txt
 test_results.txt
 WIP_STATE.md
+BouyomiSchedule.code-workspace
+.ai_rules_local.md
+!CMakeLists.txt
