@@ -93,9 +93,17 @@ void MainWindow::setupUI()
         m_valueSpin->setEnabled(text == "速度(値)" || text == "音程(値)");
     });
 
-    QPushButton* addBtn = new QPushButton("Add Timer", this);
-    connect(addBtn, &QPushButton::clicked, this, &MainWindow::addCustomTimer);
-    setupLayout->addWidget(addBtn);
+    m_addBtn = new QPushButton("Add Timer", this);
+    connect(m_addBtn, &QPushButton::clicked, this, &MainWindow::addCustomTimer);
+    setupLayout->addWidget(m_addBtn);
+
+    // バリデーション用接続
+    connect(m_messageEdit, &QLineEdit::textChanged, this, &MainWindow::updateAddButtonState);
+    connect(m_hourSpin, QOverload<int>::of(&QSpinBox::valueChanged), [this]() { m_timeTouched = true; updateAddButtonState(); });
+    connect(m_minSpin, QOverload<int>::of(&QSpinBox::valueChanged), [this]() { m_timeTouched = true; updateAddButtonState(); });
+    connect(m_presetCombo, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &MainWindow::updateAddButtonState);
+
+    updateAddButtonState();
 
     layout->addWidget(setupGroup);
 
@@ -166,9 +174,14 @@ void MainWindow::addCustomTimer()
 {
     QDateTime now = QDateTime::currentDateTime();
     QDateTime target = now;
-    target.setTime(QTime(m_hourSpin->value(), m_minSpin->value()));
+    QTime targetTime(m_hourSpin->value(), m_minSpin->value());
+    target.setTime(targetTime);
     
-    if (target <= now) target = target.addDays(1);
+    // 秒以下を無視して比較。現在の時・分より前なら明日として扱う。
+    QTime nowTruncated(now.time().hour(), now.time().minute());
+    if (targetTime < nowTruncated) {
+        target = target.addDays(1);
+    }
     
     m_timerManager->addTimer(target, m_messageEdit->text(), m_voiceCombo->currentText(), m_valueSpin->value());
 }
@@ -182,4 +195,11 @@ void MainWindow::onPresetChanged(int index)
     
     m_hourSpin->setValue(next.time().hour());
     m_minSpin->setValue(next.time().minute());
+}
+
+void MainWindow::updateAddButtonState()
+{
+    bool messageOk = !m_messageEdit->text().trimmed().isEmpty();
+    bool timeOk = (m_presetCombo->currentIndex() != 0 || m_timeTouched);
+    m_addBtn->setEnabled(messageOk && timeOk);
 }

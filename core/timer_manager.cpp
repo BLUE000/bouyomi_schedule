@@ -28,8 +28,8 @@ void TimerManager::addTimer(const QDateTime& time, const QString& message,
 {
     m_timers.append({time, message, voiceTag, voiceValue});
     
-    // 時間順にソート
-    std::sort(m_timers.begin(), m_timers.end(), [](const ScheduledTimer& a, const ScheduledTimer& b) {
+    // 時間順にソート（安定ソートを使用して同刻の登録順を維持）
+    std::stable_sort(m_timers.begin(), m_timers.end(), [](const ScheduledTimer& a, const ScheduledTimer& b) {
         return a.targetTime < b.targetTime;
     });
     
@@ -53,36 +53,43 @@ void TimerManager::clearTimers()
 void TimerManager::checkTimers()
 {
     QDateTime now = QDateTime::currentDateTime();
-    QList<int> triggeredIndices;
+    QTime nowTruncated(now.time().hour(), now.time().minute());
+    
+    QList<ScheduledTimer> triggered;
 
-    for (int i = 0; i < m_timers.size(); ++i) {
-        if (now >= m_timers[i].targetTime) {
-            triggeredIndices.append(i);
+    // 先頭（時間の早い順）からチェックしてトリガー対象を取り出す
+    for (int i = 0; i < m_timers.size(); ) {
+        QTime targetTime = m_timers[i].targetTime.time();
+        QTime targetTruncated(targetTime.hour(), targetTime.minute());
+
+        // 時・分が一致する場合
+        if (targetTruncated == nowTruncated) {
+            triggered.append(m_timers.takeAt(i));
+        } else if (m_timers[i].targetTime < now) {
+            // 万が一、時分が一致せずに過去になってしまったものも救い上げる（安全策）
+            triggered.append(m_timers.takeAt(i));
+        } else {
+            // ソートされているため、これ以降は未来
+            break;
         }
     }
 
-    // 逆順に削除（インデックスがずれないように）
-    for (int i = triggeredIndices.size() - 1; i >= 0; --i) {
-        int idx = triggeredIndices[i];
-        const auto& t = m_timers[idx];
-        
+    // 取り出した順（時系列順）に読み上げ
+    for (const auto& t : triggered) {
         QString finalMessage = t.message;
         if (!t.voiceTag.isEmpty()) {
             if (t.voiceTag == "速度(値)") {
-                finalMessage = QString("(s%1) %2").arg(t.voiceValue).arg(t.message);
+                finalMessage = QString("速度(%1)%2").arg(t.voiceValue).arg(t.message);
             } else if (t.voiceTag == "音程(値)") {
-                finalMessage = QString("(p%1) %2").arg(t.voiceValue).arg(t.message);
+                finalMessage = QString("音程(%1)%2").arg(t.voiceValue).arg(t.message);
             } else {
-                // y), やまびこ) 等はそのまま付加
-                finalMessage = QString("(%1 %2").arg(t.voiceTag).arg(t.message);
+                finalMessage = t.voiceTag + t.message;
             }
         }
-        
-        m_timers.removeAt(idx);
         emit timerTriggered(finalMessage);
     }
 
-    if (!triggeredIndices.isEmpty()) {
+    if (!triggered.isEmpty()) {
         emit timersChanged();
     }
 }

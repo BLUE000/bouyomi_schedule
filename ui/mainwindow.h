@@ -23,6 +23,7 @@ private slots:
     void updateUI();
     void addCustomTimer();
     void onPresetChanged(int index);
+    void updateAddButtonState();
 
 private:
     void setupUI();
@@ -40,6 +41,8 @@ private:
     QSpinBox* m_hourSpin;
     QSpinBox* m_minSpin;
     QLineEdit* m_messageEdit;
+    QPushButton* m_addBtn;
+    bool m_timeTouched = false;
 };
 
 #endif // MAINWINDOW_H
