@@ -118,7 +118,7 @@ void MainWindow::setupUI()
 
     connect(m_presetCombo, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &MainWindow::onPresetChanged);
 
-    setWindowTitle("Bouyomi Schedule C++");
+    setWindowTitle("Bouyomi Schedule C++ v2.0");
     resize(450, 600);
 }
 
