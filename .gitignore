@@ -3,6 +3,7 @@ bin/
 *.user
 *.txt
 .qt/
+ext/
 live_test_log.txt
 test_results.txt
 WIP_STATE.md
