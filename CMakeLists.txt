@@ -2,6 +2,11 @@ cmake_minimum_required(VERSION 3.16)
 
 project(BouyomiSchedule VERSION 2.0.0 LANGUAGES CXX)
 
+configure_file(
+    ${CMAKE_SOURCE_DIR}/core/version.h.in
+    ${CMAKE_BINARY_DIR}/generated/version.h
+)
+
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -81,6 +86,7 @@ target_include_directories(BouyomiSchedule PRIVATE
     ${CMAKE_SOURCE_DIR}/api
     ${CMAKE_SOURCE_DIR}/core
     ${CMAKE_SOURCE_DIR}/ui
+    ${CMAKE_BINARY_DIR}/generated
 )
 
 if(MSVC)

@@ -5,6 +5,7 @@
 #include <QHeaderView>
 #include <QDateTime>
 #include <QJsonArray>
+#include "version.h"
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 {
@@ -118,7 +119,7 @@ void MainWindow::setupUI()
 
     connect(m_presetCombo, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &MainWindow::onPresetChanged);
 
-    setWindowTitle("Bouyomi Schedule C++ v2.0");
+    setWindowTitle(QString("Bouyomi Schedule C++ v%1").arg(PROJECT_VERSION));
     resize(450, 600);
 }
 
