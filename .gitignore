@@ -52,3 +52,5 @@ Thumbs.db
 
 # タイマーアプリの一時ファイル
 *.tmp
+.ai_rules_local.md
+WIP_STATE.md
